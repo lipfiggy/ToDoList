@@ -1,0 +1,24 @@
+﻿@model ToDoList.Models.TaskItem
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div id="myDIV" class="header">
+    <h2>What plans?</h2>
+    <form asp-action="CreateTask">
+        <input asp-for="Description" type="text" id="myInput" placeholder="Title..." />
+        <input type="submit" value="Add" class="addBtn"></input>
+    </form>
+    <form asp-action="DeleteAll">
+        <button type="submit" class="btn btn btn-outline-dark mt-2">Clear</button>
+    </form>
+</div>
+<div id="listDiv"></div>
+
+
+
+@section Scripts{
+    <script src="~/Custom scripts/BuildList.js"></script>
+}
+
