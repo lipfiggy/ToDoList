@@ -4,7 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
+using ToDoList.Hubs;
 using ToDoList.Models;
 
 namespace ToDoList.Controllers
@@ -12,10 +15,11 @@ namespace ToDoList.Controllers
     public class TasksController : Controller
     {
         private readonly ToDoListDBContext _context;
-
-        public TasksController(ToDoListDBContext context)
+        private readonly IHubContext<ToDoListHub> _hubContext;
+        public TasksController(ToDoListDBContext context, IHubContext<ToDoListHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET: Tasks
@@ -38,6 +42,7 @@ namespace ToDoList.Controllers
                 task.Done = false;
                 _context.Add(task);
                 await _context.SaveChangesAsync();
+                SendToClients();
             }
             return RedirectToAction(nameof(Index));
         }
@@ -57,6 +62,7 @@ namespace ToDoList.Controllers
             task.Done = value;
             _context.Entry(task).State = EntityState.Modified;
             _context.SaveChanges();
+            SendToClients();
             return RedirectToAction(nameof(Index));
         }
 
@@ -73,6 +79,7 @@ namespace ToDoList.Controllers
             }
             
             await _context.SaveChangesAsync();
+            SendToClients();
             return RedirectToAction(nameof(Index));
         }
 
@@ -88,6 +95,7 @@ namespace ToDoList.Controllers
             }
 
             await _context.SaveChangesAsync();
+            SendToClients();
             return RedirectToAction(nameof(Index));
         }
 
@@ -103,6 +111,11 @@ namespace ToDoList.Controllers
                 }
             }
             ViewBag.Percent = tasks.Count() == 0 ? 0 : Math.Round(100f * ((float)completeCount / (float)tasks.Count()));
+        }
+
+        private async void SendToClients()
+        {
+            await _hubContext.Clients.All.SendAsync("ListOfToDosHasChanged");
         }
 
         private bool TaskExists(Guid id)

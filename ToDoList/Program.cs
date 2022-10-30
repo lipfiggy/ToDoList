@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ToDoList.Hubs;
 using ToDoList.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ToDoListDBContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("ToDoListConnection")));
+builder.Services.AddSignalR(config => config.EnableDetailedErrors = true);
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
@@ -21,6 +23,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapHub<ToDoListHub>("/toDoListHub");
 
 app.MapControllerRoute(
     name: "default",
